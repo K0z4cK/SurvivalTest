@@ -3,6 +3,9 @@ using UnityEngine;
 
 public class InventorySystem : MonoBehaviour
 {
+    private event Action<int ,InventoryItem> OnItemSet;
+    private event Action<int> OnItemClear;
+
     [SerializeField] private int _maxCells;
     [SerializeField] private int _maxItemsInCell;
 
@@ -11,6 +14,10 @@ public class InventorySystem : MonoBehaviour
     private void Awake()
     {
         _inventoryItems = new InventoryItem[_maxCells];
+
+        //temp
+        CraftManager.Instance.SubscribeOnItemCrafted(OnItemCrafted);
+        //UIManager.Instance.SubscribeOnInventoryActions(ref OnItemSet, ref OnItemClear);
     }
 
     public void AddItems(IPickable pickable, ItemObject itemObject, int count = 1)
@@ -50,6 +57,34 @@ public class InventorySystem : MonoBehaviour
         Debug.Log("Inventory Full");
     }
 
+    public bool TryAddItems(ItemObject itemObject, int count = 1)
+    {
+        int index = -1;
+        if (CheckSameItem(itemObject, ref index))
+        {
+            if (IsCellHaveSpace(index, count))
+            {
+                AddItemsToCell(index, count);
+                return true;
+            }
+            else
+            {
+                AddItemsToCell(index, _maxItemsInCell - _inventoryItems[index].Count);
+                count = GetCountRest(index, count);
+            }
+        }
+
+        index = GetFirstEmptyCellIndex();
+        if (index > -1)
+        {
+            SetItemToCell(index, itemObject, count);
+            return true;
+        }
+
+        Debug.Log("Inventory Full");
+        return false;
+    }
+
     private void SetItemToCell(int index, ItemObject itemObject, int count)
     {
         _inventoryItems[index].ItemObject = itemObject;
@@ -59,6 +94,7 @@ public class InventorySystem : MonoBehaviour
     private void AddItemsToCell(int index, int count)
     {
         _inventoryItems[index].Count += count;
+        OnItemSet?.Invoke(index, _inventoryItems[index]);
     }
 
     private int GetCountRest(int index, int count) => _inventoryItems[index].Count + count - _maxItemsInCell;
@@ -88,34 +124,62 @@ public class InventorySystem : MonoBehaviour
         return -1;
     }
 
+    public void OnItemCrafted(ItemCraftStruct itemCraft)
+    {
+        if (TryAddItems(itemCraft.ItemResult.ItemObject, itemCraft.ItemResult.Count))
+        {
+            foreach (InventoryItem item in itemCraft.CraftRecipe)
+            {
+                RemoveItems(item.ItemObject, item.Count);
+            }
+
+            Debug.Log("item crafted: " + itemCraft.ItemResult.ItemObject.Name);
+        }
+        else
+            Debug.Log("item craft failed: " + itemCraft.ItemResult.ItemObject.Name);
+    }
+
     public void RemoveItems(ItemObject item, int count = 1)
     {
         for(int i = 0; i < _inventoryItems.Length; i++)
         {
             if (_inventoryItems[i].ItemObject == item)
             {
-                RemoveItems(i, count);
+                RemoveItems(i, ref count);
+                if(count > 0)
+                {
+                    RemoveItems(item, count);
+                }
                 return;
             }
         }
     }
 
-    public void RemoveItems(int index, int count = 1)
+    private void RemoveItems(int index, ref int count)
     {
         if (_inventoryItems[index].Count > 0)
         {
-            _inventoryItems[index].Count -= 0;
-            ClearCell(index);
+            if (_inventoryItems[index].Count - count <= 0)
+            {
+                _inventoryItems[index].Count -= count;
+                count = _inventoryItems[index].Count * -1;
+                ClearCell(index);
+                OnItemClear?.Invoke(index);
+            }
+            else
+            {
+                _inventoryItems[index].Count -= count;
+                count = 0;
+                OnItemSet?.Invoke(index, _inventoryItems[index]);
+            }
+            
         }
     }
 
     private void ClearCell(int index)
     {
-        if (_inventoryItems[index].Count <= 0)
-        {
-            _inventoryItems[index].Count = 0;
-            _inventoryItems[index].ItemObject = null;
-        }
+        _inventoryItems[index].Count = 0;
+        _inventoryItems[index].ItemObject = null;
     }
 
     public void SwapItems(int firstIndex, int secondIndex)

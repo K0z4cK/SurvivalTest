@@ -17,6 +17,10 @@ public class Character : MonoBehaviour, IControllable
 
     private List<Transform> _pickableQueue = new List<Transform>();
 
+    public List<ItemCraftStruct> avalibleCrafts;//temp
+    public ItemCraftStruct craft; // temp
+    public bool iscraft = false; // temp
+
     private void Awake()
     {
         _characterController = GetComponent<CharacterController>();
@@ -26,6 +30,10 @@ public class Character : MonoBehaviour, IControllable
     public void Action()
     {
         Debug.Log("Action");
+        if (iscraft)
+            CraftManager.Instance.CraftItem(craft);
+        else
+            avalibleCrafts = CraftManager.Instance.GetAvalibleCrafts(_InventorySystem._inventoryItems);  
     }
 
     public void Interact()
