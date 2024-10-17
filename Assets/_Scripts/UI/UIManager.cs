@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,6 +13,7 @@ public class UIManager : SingletonComponent<UIManager>
     [SerializeField] private CraftUI _craftPanel;
     [SerializeField] private Button _showCraftBtn;
     [SerializeField] private Button _hideCraftBtn;
+    public CraftUI CraftPanel => _craftPanel;
 
     private void Awake()
     {
