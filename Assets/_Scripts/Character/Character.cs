@@ -5,11 +5,11 @@ using UnityEngine;
 [RequireComponent(typeof(CharacterController))]
 public class Character : MonoBehaviour, IControllable
 {
-    [SerializeField] private InventorySystem _InventorySystem; // temp
-
+    [SerializeField] private Animator _animator;
     [SerializeField] private float _speed = 10f;
 
     private CharacterController _characterController;
+    private InventorySystem _InventorySystem;
     private Transform _transform;
 
     private IPickable _currentPickableItem;
@@ -17,23 +17,17 @@ public class Character : MonoBehaviour, IControllable
 
     private List<Transform> _pickableQueue = new List<Transform>();
 
-    public List<ItemCraftStruct> avalibleCrafts;//temp
-    public ItemCraftStruct craft; // temp
-    public bool iscraft = false; // temp
-
     private void Awake()
     {
         _characterController = GetComponent<CharacterController>();
+        _InventorySystem = GetComponent<InventorySystem>();
         _transform = transform;
     }
 
     public void Action()
     {
         Debug.Log("Action");
-        if (iscraft)
-            CraftManager.Instance.CraftItem(craft);
-        else
-            avalibleCrafts = CraftManager.Instance.GetAvalibleCrafts(_InventorySystem._inventoryItems);  
+        _animator.SetTrigger("Attack");
     }
 
     public void Interact()
@@ -42,6 +36,7 @@ public class Character : MonoBehaviour, IControllable
             return;
         _currentPickableItem.PickUp();
         GetPickableFromQueue();
+        _animator.SetTrigger("Gather");
         Debug.Log("Interact");
     }
 
@@ -51,6 +46,7 @@ public class Character : MonoBehaviour, IControllable
 
         _transform.LookAt(_transform.position + scaledMovement, Vector3.up);
         _characterController.Move(scaledMovement);
+        _animator.SetFloat("Velocity", _characterController.velocity.magnitude);
     }
 
     private void OnTriggerEnter(Collider other)

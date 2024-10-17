@@ -3,21 +3,21 @@ using UnityEngine;
 
 public class InventorySystem : MonoBehaviour
 {
-    private event Action<int ,InventoryItem> OnItemSet;
-    private event Action<int> OnItemClear;
+    [SerializeField] private ItemsHolder _itemsHolder;
 
     [SerializeField] private int _maxCells;
     [SerializeField] private int _maxItemsInCell;
 
-    public InventoryItem[] _inventoryItems;
+    private InventoryItem[] _inventoryItems;
+    public InventoryItem[] InventoryItems => _inventoryItems;
 
     private void Awake()
     {
         _inventoryItems = new InventoryItem[_maxCells];
 
-        //temp
         CraftManager.Instance.SubscribeOnItemCrafted(OnItemCrafted);
-        //UIManager.Instance.SubscribeOnInventoryActions(ref OnItemSet, ref OnItemClear);
+        UIManager.Instance.InventoryPanel.OnSwapCellItems += SwapItems;
+        UIManager.Instance.InventoryPanel.OnCellItemClick += SelectItemInHolder;
     }
 
     public void AddItems(IPickable pickable, ItemObject itemObject, int count = 1)
@@ -94,7 +94,7 @@ public class InventorySystem : MonoBehaviour
     private void AddItemsToCell(int index, int count)
     {
         _inventoryItems[index].Count += count;
-        OnItemSet?.Invoke(index, _inventoryItems[index]);
+        UIManager.Instance.InventoryPanel.SetItemToCell(index, _inventoryItems[index]);
     }
 
     private int GetCountRest(int index, int count) => _inventoryItems[index].Count + count - _maxItemsInCell;
@@ -164,13 +164,13 @@ public class InventorySystem : MonoBehaviour
                 _inventoryItems[index].Count -= count;
                 count = _inventoryItems[index].Count * -1;
                 ClearCell(index);
-                OnItemClear?.Invoke(index);
+                UIManager.Instance.InventoryPanel.ClearCell(index);
             }
             else
             {
                 _inventoryItems[index].Count -= count;
                 count = 0;
-                OnItemSet?.Invoke(index, _inventoryItems[index]);
+                UIManager.Instance.InventoryPanel.SetItemToCell(index, _inventoryItems[index]);
             }
             
         }
@@ -187,6 +187,22 @@ public class InventorySystem : MonoBehaviour
         var temp = _inventoryItems[firstIndex];
         _inventoryItems[firstIndex] = _inventoryItems[secondIndex];
         _inventoryItems[secondIndex] = temp;
+
+        UpdateCellUI(firstIndex);
+        UpdateCellUI(secondIndex);
+    }
+
+    private void SelectItemInHolder(int index)
+    {
+        _itemsHolder.SetNewItem(_inventoryItems[index].ItemObject.Type);
+    }
+
+    private void UpdateCellUI(int index)
+    {
+        if (_inventoryItems[index].ItemObject != null)
+            UIManager.Instance.InventoryPanel.SetItemToCell(index, _inventoryItems[index]);
+        else
+            UIManager.Instance.InventoryPanel.ClearCell(index);
     }
 }
 

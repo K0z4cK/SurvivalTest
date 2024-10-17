@@ -8,17 +8,20 @@ public class UIManager : SingletonComponent<UIManager>
     [SerializeField] private InventoryUI _inventoryPanel;
     [SerializeField] private Button _showInventoryBtn;
     [SerializeField] private Button _hideInventoryBtn;
+    public InventoryUI InventoryPanel => _inventoryPanel;
+
+    [Header("Craft")]
+    [SerializeField] private CraftUI _craftPanel;
+    [SerializeField] private Button _showCraftBtn;
+    [SerializeField] private Button _hideCraftBtn;
 
     private void Awake()
     {
         _showInventoryBtn.onClick.AddListener(_inventoryPanel.ShowPanel);
         _hideInventoryBtn.onClick.AddListener(_inventoryPanel.HidePanel);
-    }
 
-    public void SubscribeOnInventoryActions(ref Action<int, InventoryItem> onItemSet, ref Action<int> onItemClear)
-    {
-        onItemSet += _inventoryPanel.SetItemToCell;
-        onItemClear += _inventoryPanel.ClearCell;
+        _showCraftBtn.onClick.AddListener(_craftPanel.ShowPanel);
+        _hideCraftBtn.onClick.AddListener(_craftPanel.HidePanel);
     }
 
 }

@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43ab0532e19dc7f4788a40a545df03d7, type: 3}
   m_Name: SpearData
   m_EditorClassIdentifier: 
-  Type: 4
+  Type: 5
   Name: Spear
   Description: Use to hunt animals or fight with your enemies
   Sprite: {fileID: 21300000, guid: f1eac41a597e1df4594df65fe87c9f69, type: 3}
+  GameObjectPrefab: {fileID: 0}

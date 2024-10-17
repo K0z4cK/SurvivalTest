@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public enum ItemType {Stone, Wood, Berry, Axe, Spear, Pickaxe }
+public enum ItemType {None, Stone, Wood, Berry, Axe, Spear, Pickaxe }
 
 [CreateAssetMenu(fileName = "ItemData", menuName = "ScriptableObjects/ItemScriptableObject")]
 public class ItemObject : ScriptableObject
@@ -9,5 +9,4 @@ public class ItemObject : ScriptableObject
     public string Name;
     public string Description;
     public Sprite Sprite;
-    
 }

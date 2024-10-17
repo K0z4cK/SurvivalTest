@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43ab0532e19dc7f4788a40a545df03d7, type: 3}
   m_Name: AxeData
   m_EditorClassIdentifier: 
-  Type: 3
+  Type: 4
   Name: Axe
   Description: Use to chop trees
   Sprite: {fileID: 21300000, guid: a993cdb3b7f336243b20b4a0bd0be230, type: 3}
+  GameObjectPrefab: {fileID: 0}
